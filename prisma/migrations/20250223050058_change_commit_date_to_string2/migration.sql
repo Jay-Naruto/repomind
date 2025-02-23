@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Commit" ALTER COLUMN "commitDate" DROP NOT NULL,
+ALTER COLUMN "commitDate" SET DATA TYPE TEXT;

@@ -18,7 +18,6 @@ const CreatePage = () => {
   const refetch = useRefetch();
 
   function onSubmit(data: FormInput) {
-    alert(JSON.stringify(data, null, 2));
     createProject.mutate(
       {
         githubUrl: data.repoUrl,
