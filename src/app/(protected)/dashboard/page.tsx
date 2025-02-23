@@ -4,6 +4,7 @@ import { useUser } from "@clerk/nextjs";
 import { ExternalLink, Github } from "lucide-react";
 import Link from "next/link";
 import React from "react";
+import Commitlog from "./commit-log";
 
 const DashboardPage = () => {
   const { user } = useUser();
@@ -36,7 +37,7 @@ const DashboardPage = () => {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-5">klslaks</div>
       </div>
       <div className="mt-8"></div>
-      Commit
+      <Commitlog/>
     </div>
   );
 };
