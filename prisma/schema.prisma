@@ -31,6 +31,7 @@ model Project {
 
   userToProjects UserToProject[]
   commits        Commit[]
+  sourceCodeEmbeddings SourceCodeEmbedding[]
 }
 
 model UserToProject {

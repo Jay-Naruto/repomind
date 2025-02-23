@@ -24,7 +24,7 @@ export const getCommitHashes = async (
     owner,
     repo,
   });
-    console.log(JSON.stringify(data.data[0].commit, null, 2));
+    // console.log(JSON.stringify(data.data[0].commit, null, 2));
   const sortedCommits = data.data.sort(
     (a: any, b: any) =>
       new Date(b.commit.author.date).getTime() -
@@ -75,7 +75,6 @@ export const pollCommits = async (projectId: string) => {
 
   const commits = await db.commit.createMany({
     data: summarises.map((summary, index) => {
-      console.log("processing", index);
       return {
         projectId: projectId,
         commitHash: unprocessedCommits[index]!.commitHash,

@@ -5,6 +5,7 @@ import { ExternalLink, Github } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 import Commitlog from "./commit-log";
+import QuestionCard from "./question-card";
 
 const DashboardPage = () => {
   const { user } = useUser();
@@ -34,7 +35,9 @@ const DashboardPage = () => {
         <div className="flex items-center gap-4">123</div>
       </div>
       <div className="mt-4">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-5">klslaks</div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-5">
+          <QuestionCard/>
+        </div>
       </div>
       <div className="mt-8"></div>
       <Commitlog/>
