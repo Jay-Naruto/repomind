@@ -71,6 +71,7 @@ export async function summariseCode(doc: Document[]) {
         ---
         Give a summary no more than 100 words of the code above.`,
       ]);
+      // console.log(response.response?.candidates?.[0]?.content)
       return (
         response.response?.candidates?.[0]?.content?.parts?.[0]?.text ||
         "Failed to generate summary."

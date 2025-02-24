@@ -52,16 +52,14 @@ export const indexGithubRepo = async (
   );
 };
 
-const BATCH_SIZE = 5; // Adjust this to suit your rate limits and use case
+const BATCH_SIZE = 5;
 
 export const generateEmbeddings = async (docs: Document[]) => {
   const batchedEmbeddings = [];
 
-  // Process documents in batches
   for (let i = 0; i < docs.length; i += BATCH_SIZE) {
     const batch = docs.slice(i, i + BATCH_SIZE);
     
-    // Process a single batch
     const batchEmbeddings = await Promise.all(
       batch.map(async (doc) => {
         const summary = await summariseCode(doc);
