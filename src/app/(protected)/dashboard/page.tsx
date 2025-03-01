@@ -32,7 +32,7 @@ const DashboardPage = () => {
         </div>
         <div className="h-4"></div>
 
-        <div className="flex items-center gap-4">123</div>
+        <div className="flex items-center gap-4"></div>
       </div>
       <div className="mt-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-5">

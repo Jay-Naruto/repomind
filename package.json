@@ -72,6 +72,7 @@
     "ignore": "^7.0.3",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.475.0",
+    "ml-pca": "^4.1.1",
     "next": "^15.0.1",
     "next-themes": "^0.4.4",
     "octokit": "^4.1.2",

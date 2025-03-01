@@ -11,18 +11,17 @@ const google = createGoogleGenerativeAI({
 
 export async function askQuestion(question: string, projectId: string) {
   const stream = createStreamableValue();
-  const queryVector = await generateEmbedding(question);
-
-  const vectorQuery = `[${queryVector.join(",")}]`;
+  const queryvector = await generateEmbedding(question);
+  const vectorQuery = `[${queryvector.join(",")}]`;
 
   const result = (await db.$queryRaw`
-      SELECT "fileName", "sourceCode", "summary",
-        1 - ("summaryEmbedding" <=> ${vectorQuery}::vector) AS similarity
-      FROM "SourceCodeEmbedding"
-      WHERE 1 - ("summaryEmbedding" <=> ${vectorQuery}::vector) > .5
-      AND "projectId" = ${projectId}
-      ORDER BY similarity DESC
-      LIMIT 10
+  SELECT "fileName", "sourceCode", "summary",
+    1 - ("summaryEmbedding" <=> ${vectorQuery}::vector(1536)) AS similarity
+  FROM "SourceCodeEmbedding"
+  WHERE 1 - ("summaryEmbedding" <=> ${vectorQuery}::vector(1536)) > .5
+  AND "projectId" = ${projectId}
+  ORDER BY similarity DESC
+  LIMIT 10
     `) as { fileName: string; sourceCode: string; summary: string }[];
 
   let context = "";
@@ -30,7 +29,6 @@ export async function askQuestion(question: string, projectId: string) {
   for (const docs of result) {
     context += `source: ${docs.fileName}\ncode content: ${docs.sourceCode}\n summary of the file: ${docs.summary}\n\n`;
   }
-  console.log("CONTEXT", result);
   (async () => {
     const { textStream } = await streamText({
       model: google("gemini-1.5-flash"),

@@ -42,7 +42,6 @@ const QuestionCard = () => {
         project.id,
       );
       setOpen(true);
-      console.log(fileReferences);
       setFileReferences(fileReferences);
 
       for await (const delta of readStreamableValue(output)) {

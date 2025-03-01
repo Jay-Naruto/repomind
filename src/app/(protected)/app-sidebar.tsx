@@ -32,11 +32,11 @@ export default function AppSidebar() {
       url: "/qa",
       icon: Bot,
     },
-    {
-      title: "Meetings",
-      url: "/meetings",
-      icon: Presentation,
-    },
+    // {
+    //   title: "Meetings",
+    //   url: "/meetings",
+    //   icon: Presentation,
+    // },
   ];
 
 

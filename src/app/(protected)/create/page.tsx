@@ -40,7 +40,7 @@ const CreatePage = () => {
 
   return (
     <div className="flex h-full items-center justify-center gap-12">
-      <img src="/undraw_github.svg" className="h-56 w-auto" />
+      <img src="/undraw_pair-programming_9jyg.svg" className="h-56 w-auto" />
 
       <div className="">
         <div>
