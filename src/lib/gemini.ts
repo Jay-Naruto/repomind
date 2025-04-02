@@ -2,62 +2,128 @@ import { OpenAI } from "openai";
 import { Document } from "@langchain/core/documents";
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY, // Make sure this is set in your environment
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
-export const aiSummariseCommit = async (diff: string) => {
-  try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [
-        {
-          role: "system",
-          content: `You are an expert programmer, and you are trying to summarize a git diff.
+const MAX_BATCH_CHARACTERS = 40000; 
 
-          Reminders about the diff format:
+const createBatches = (diffChunks: string[]) => {
+  let batches: string[] = [];
+  let currentBatch: string[] = [];
+  let currentCharCount = 0;
 
-          For every file, there are a few metadata lines, like (for example):
-          '''
-          diff --git a/index.js b/index.js
-          index a0df691..befe003 100644
-          --- a/index.js
-          +++ b/index.js
-          '''
-          This means that \`lib/index.js\` was modified in this commit. Note that this is only an example.
-          Then there is a specifier of the lines that were modified.
-          A line starting with \`+\` means it was added.
-          A line starting with \`-\` means that line was deleted.
-          A line that starts with neither \`+\` nor \`-\` is code given for context and better understanding.
-          It is not part of the diff.
-          [...]
+  diffChunks.forEach((chunk) => {
+    const chunkCharCount = chunk.length;
 
-          EXAMPLE SUMMARY COMMENTS:
-          '''
-          * Raised the amount of returned recordings from \`10\` to \`100\` [packages/server/recordings_api.ts], [packages/server/constants.ts]
-          * Fixed a typo in the action name [.github/workflows/gpt-commit-summarizer.yml]
-          * Moved the \`octokit\` initialization to a separate file [src/octokit.ts], [src/index.ts]
-          * Added an OpenAI API for completions [packages/utils/apis/openai.ts]
-          * Lowered numeric tolerance for test files
-          '''
+    if (currentCharCount + chunkCharCount > MAX_BATCH_CHARACTERS) {
+      // Save the current batch and start a new one
+      batches.push(currentBatch.join("\n"));
+      currentBatch = [chunk];
+      currentCharCount = chunkCharCount;
+    } else {
+      // Add to the current batch
+      currentBatch.push(chunk);
+      currentCharCount += chunkCharCount;
+    }
+  });
 
-          Most commits will have fewer comments than this example list.
-          The last commit does not include the file names,
-          because there were more than two relevant files in the hypothetical commit.
-          Do not include parts of the example in your summary.
-          It is given only as an example of appropriate comments.`,
-        },
-        {
-          role: "user",
-          content: `Please summarize the following diff file:\n\n${diff}`,
-        },
-      ],
-      max_tokens: 200,
-    });
-    return response.choices[0]?.message?.content || "Failed to generate summary.";
-  } catch (error) {
-    console.error("Error summarizing commit diff:", error);
-    return "Error generating summary.";
+  if (currentBatch.length > 0) {
+    batches.push(currentBatch.join("\n"));
   }
+
+  return batches;
+};
+
+const CHUNK_SIZE = 1500;
+let MAX_PARALLEL_REQUESTS = 25;
+let RATE_LIMIT_DELAY = 1000;
+
+export const splitDiff = (diff: string) => {
+  const lines = diff.split("\n");
+  let chunks: string[] = [];
+  let currentChunk: string[] = [];
+
+  lines.forEach((line) => {
+    currentChunk.push(line);
+    if (currentChunk.join("\n").length > CHUNK_SIZE) {
+      chunks.push(currentChunk.join("\n"));
+      currentChunk = [line];
+    }
+  });
+
+  if (currentChunk.length > 0) {
+    chunks.push(currentChunk.join("\n"));
+  }
+
+  return chunks;
+};
+const BATCH_SIZE = 20;
+
+export const aiSummariseCommit = async (diff: string) => {
+  const diffChunks = splitDiff(diff);
+  const batches = createBatches(diffChunks); // ✅ Dynamically sized batches
+  const batchedSummaries: string[] = [];
+
+  console.log(`Total Batches: ${batches.length}`);
+
+  for (let i = 0; i < batches.length; i++) {
+    console.log(`🚀 Processing batch ${i + 1}...`);
+
+    try {
+      const summary = await summarizeBatch(batches[i]);
+      batchedSummaries.push(summary);
+    } catch (error) {
+      console.error("Error summarizing batch:", error);
+      batchedSummaries.push("Error generating batch summary.");
+    }
+
+    console.log(`⏳ Waiting ${RATE_LIMIT_DELAY}ms before next batch...`);
+    await new Promise((resolve) => setTimeout(resolve, RATE_LIMIT_DELAY));
+  }
+
+  return await finalizeCommitSummary(batchedSummaries.join("\n"));
+};
+
+const summarizeBatch = async (batch: string) => {
+  const response = await openai.chat.completions.create({
+    model: "gpt-3.5-turbo",
+    messages: [
+      {
+        role: "system",
+        content: `Summarize the following git diff changes in a concise manner, highlighting the most important modifications.`,
+      },
+      {
+        role: "user",
+        content: `Diff Batch:\n\n${batch}`,
+      },
+    ],
+    max_tokens: 250,
+  });
+
+  return (
+    response.choices[0]?.message?.content || "Failed to generate batch summary."
+  );
+};
+
+const finalizeCommitSummary = async (fullSummary: string) => {
+  const response = await openai.chat.completions.create({
+    model: "gpt-3.5-turbo",
+    messages: [
+      {
+        role: "system",
+        content: `Summarize the following commit changes in bullet points (maximum 10). Each bullet point should be clear and concise, focusing only on key changes.`,
+      },
+      {
+        role: "user",
+        content: `Full Summary:\n\n${fullSummary}`,
+      },
+    ],
+    max_tokens: 200,
+  });
+
+  return (
+    response.choices[0]?.message?.content || "Failed to generate final summary."
+  );
 };
 
 const MAX_RETRIES = 5;
@@ -89,7 +155,9 @@ export async function summariseCode(doc: Document[]) {
         max_tokens: 200,
       });
 
-      return response.choices[0]?.message?.content || "Failed to generate summary.";
+      return (
+        response.choices[0]?.message?.content || "Failed to generate summary."
+      );
     } catch (error: any) {
       attempts++;
       if (error.status === 429 && attempts < MAX_RETRIES) {
