@@ -16,12 +16,10 @@ const createBatches = (diffChunks: string[]) => {
     const chunkCharCount = chunk.length;
 
     if (currentCharCount + chunkCharCount > MAX_BATCH_CHARACTERS) {
-      // Save the current batch and start a new one
       batches.push(currentBatch.join("\n"));
       currentBatch = [chunk];
       currentCharCount = chunkCharCount;
     } else {
-      // Add to the current batch
       currentBatch.push(chunk);
       currentCharCount += chunkCharCount;
     }
@@ -35,7 +33,6 @@ const createBatches = (diffChunks: string[]) => {
 };
 
 const CHUNK_SIZE = 1500;
-let MAX_PARALLEL_REQUESTS = 25;
 let RATE_LIMIT_DELAY = 1000;
 
 export const splitDiff = (diff: string) => {
@@ -57,11 +54,10 @@ export const splitDiff = (diff: string) => {
 
   return chunks;
 };
-const BATCH_SIZE = 20;
 
 export const aiSummariseCommit = async (diff: string) => {
   const diffChunks = splitDiff(diff);
-  const batches = createBatches(diffChunks); // ✅ Dynamically sized batches
+  const batches = createBatches(diffChunks);
   const batchedSummaries: string[] = [];
 
   console.log(`Total Batches: ${batches.length}`);

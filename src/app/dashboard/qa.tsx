@@ -18,7 +18,10 @@ const QAPage = () => {
   const { data: questions } = api.project.getQuestions.useQuery({ projectId });
   const [questionIndex, setQuestionIndex] = useState(0);
   const question = questions?.[questionIndex];
-
+  if (!projectId) {
+    return <p className="text-sm text-gray-400">No project selected</p>;
+  }
+  
   return (
     <Sheet>
       <QuestionCard />

@@ -1,17 +1,28 @@
-import { api } from '@/trpc/react'
-import React from 'react'
-import { useLocalStorage } from 'usehooks-ts'
+import { api } from "@/trpc/react";
+import { useLocalStorage } from "usehooks-ts";
+import { useEffect, useMemo } from "react";
 
 const useProject = () => {
-  const {data: projects} = api.project.getProjects.useQuery()
-  const [projectId, setProjectId] = useLocalStorage('repomind-projectId',"")
-  const project = projects?.find(project => project.id === projectId)
+  const { data: projects, isLoading } = api.project.getProjects.useQuery();
+  const [projectId, setProjectId] = useLocalStorage("repomind-projectId", "");
+
+  const matchedProject = useMemo(() => {
+    return projects?.find((p) => p.id === projectId);
+  }, [projects, projectId]);
+
+  useEffect(() => {
+    if (!projectId && projects?.length) {
+      setProjectId(projects[0].id);
+    }
+  }, [projects, projectId, setProjectId]);
+
   return {
     projects,
-    project,
+    project: matchedProject,
     projectId,
-    setProjectId
-  }
-}
+    setProjectId,
+    isLoading,
+  };
+};
 
-export default useProject
+export default useProject;

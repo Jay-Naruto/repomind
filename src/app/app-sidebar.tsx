@@ -23,12 +23,12 @@ import React from "react";
 export default function AppSidebar() {
   const items = [
     {
-      title: "Dashboard",
+      title: "Commits",
       url: "/dashboard",
       icon: LayoutDashboard,
     },
     {
-      title: "Q&A",
+      title: "Q&A Bot",
       url: "/qa",
       icon: Bot,
     },
@@ -39,10 +39,9 @@ export default function AppSidebar() {
     // },
   ];
 
-
   const pathname = usePathname();
   const { open } = useSidebar();
-  const {projects, projectId, setProjectId} = useProject()
+  const { projects, projectId, setProjectId } = useProject();
   return (
     <Sidebar collapsible="icon" variant="floating">
       <SidebarHeader>
@@ -86,10 +85,15 @@ export default function AppSidebar() {
           <SidebarGroupLabel>Your Projects</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {projects?.map((item) => {
+              {projects?.map((item: any) => {
                 return (
                   <SidebarMenuItem key={item.name}>
-                    <SidebarMenuButton onClick={()=>{setProjectId(item.id)}} asChild>
+                    <SidebarMenuButton
+                      onClick={() => {
+                        setProjectId(item.id);
+                      }}
+                      asChild
+                    >
                       <div>
                         <div
                           className={cn(

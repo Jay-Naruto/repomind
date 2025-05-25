@@ -1,89 +1,66 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
   extensions = [vector]
 }
 
-model Users {
-  id           String   @id @default(cuid())
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  imageUrl     String?
-  firstName    String?
-  lastName     String?
-  emailAddress String   @unique
-
-  userToProjects UserToProject[]
-  questionsAsked Question[]
-}
-
 model Project {
-  id           String   @id @default(cuid())
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  name    String
-  githubUrl     String
-  deletedAt    DateTime?
+  id        String    @id @default(cuid())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  name      String
+  githubUrl String
+  deletedAt DateTime?
 
-  userToProjects UserToProject[]
-  commits        Commit[]
-  sourceCodeEmbeddings SourceCodeEmbedding[]
-  savedQuestions        Question[]
+  savedQuestions Question[] @relation("ProjectQuestions")
+  commits        Commit[]   @relation("ProjectCommits")
 
-}
-
-model UserToProject {
-  id           String   @id @default(cuid())
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  userId    String
-  projectId     String
-  user Users @relation(fields: [userId], references: [id])
-  project Project @relation(fields: [projectId], references: [id])
-
-  @@unique([userId, projectId])
+  SourceCodeEmbedding SourceCodeEmbedding[]
 }
 
 model SourceCodeEmbedding {
-id String @id @default(cuid())
-summaryEmbedding Unsupported("vector(1536)")?
-sourceCode String
-fileName String
-summary String
-projectId String
-project Project @relation(fields: [projectId], references: [id])
+  id               String                       @id @default(cuid())
+  summaryEmbedding Unsupported("vector(1536)")?
+  sourceCode       String
+  fileName         String
+  summary          String
+  projectId        String
+  project          Project                      @relation(fields: [projectId], references: [id])
 }
 
 model Question {
-  id                String   @id @default(cuid())
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  question String
-  answer String
+  id             String   @id @default(cuid())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  question       String
+  answer         String
   fileReferences Json?
 
-  userId String
-  user Users @relation(fields: [userId], references: [id])
-
-  projectId         String
-  project           Project  @relation(fields: [projectId], references: [id])
+  projectId String
+  project   Project @relation("ProjectQuestions", fields: [projectId], references: [id])
 }
 
 model Commit {
-  id                String   @id @default(cuid())
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  projectId         String
-  project           Project  @relation(fields: [projectId], references: [id])
-  commitMessage     String
-  commitHash        String
-  commitAuthorName  String
+  id                 String   @id @default(cuid())
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  projectId          String
+  project            Project  @relation("ProjectCommits", fields: [projectId], references: [id])
+  commitMessage      String
+  commitHash         String
+  commitAuthorName   String
   commitAuthorAvatar String
-  commitDate        String?
-  summary           String?
+  commitDate         String?
+  summary            String?
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
 }

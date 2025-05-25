@@ -41,10 +41,12 @@ const QuestionCard = () => {
         question,
         project.id,
       );
+      console.log("Output:", output);
       setOpen(true);
       setFileReferences(fileReferences);
 
       for await (const delta of readStreamableValue(output)) {
+        console.log("Delta chunk:", delta);
         if (delta) {
           setAnswer((ans) => ans + delta);
         }
@@ -104,9 +106,11 @@ const QuestionCard = () => {
           </Button>
         </DialogContent>
       </Dialog>
-      <Card className="relative col-span-5 w-full">
+      <Card className="relative col-span-5 w-full rounded-lg border border-zinc-800 bg-[#141417] bg-zinc-900/60">
         <CardHeader>
-          <CardTitle>Ask a question</CardTitle>
+          <CardTitle className="text-white">
+            Ask a question to understand your repo
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={onSubmit}>
@@ -114,11 +118,15 @@ const QuestionCard = () => {
               placeholder="Which file should I edit to change the home page?"
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
-              className="mb-4"
+              className="mb-4 text-gray-600"
             />
             <div className="h-4" />
-            <Button type="submit" disabled={loading}>
-              Ask RepoMind!
+            <Button
+              type="submit"
+              className="border border-zinc-800 bg-zinc-900/60"
+              disabled={loading}
+            >
+              {loading ? <>Analyzing...</> : <>Ask RepoMind!</>}
             </Button>
           </form>
         </CardContent>
