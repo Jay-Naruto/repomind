@@ -12,7 +12,7 @@ const CodeReferences = ({ fileReferences }: Props) => {
   const [tab, setTab] = React.useState(fileReferences[0]?.fileName);
   if (fileReferences.length === 0) return null;
   return (
-    <div className="max-w-[70vw]">
+    <div className="w-full">
       <Tabs value={tab} onValueChange={setTab}>
         <div className="flex gap-2 overflow-scroll rounded-md bg-gray-100 p-1">
           {fileReferences.map((file) => (
@@ -33,7 +33,7 @@ const CodeReferences = ({ fileReferences }: Props) => {
         {fileReferences.map((file) => (
           <TabsContent
             key={file.fileName}
-            className="max-h-[40vh] max-w-7xl overflow-scroll rounded-md"
+            className="max-h-[40vh] w-full overflow-scroll rounded-md"
             value={file.fileName}
           >
             <SyntaxHighlighter language="typescript" style={lucario}>

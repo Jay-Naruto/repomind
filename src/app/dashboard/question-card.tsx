@@ -66,7 +66,7 @@ const QuestionCard = () => {
               <DialogTitle>
                 <Image src="/logo.png" alt="" width={40} height={40} />
               </DialogTitle>
-              <Button
+              {/* <Button
                 disabled={saveAnswer.isPending}
                 variant={"outline"}
                 onClick={() => {
@@ -90,7 +90,7 @@ const QuestionCard = () => {
                 }}
               >
                 Save Answer
-              </Button>
+              </Button> */}
             </div>
           </DialogHeader>
           <MDEditor.Markdown
